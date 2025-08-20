@@ -48,7 +48,6 @@ class Hoozuki
 
               nfa.transitions.merge(remain.transitions)
               nfa.add_epsilon_transition(start_state, remain.start)
-              nfa.add_epsilon_transition(start_state, accept_state)
               remain.accept.each do |remain_accept|
                 nfa.add_epsilon_transition(remain_accept, remain.start)
                 nfa.add_epsilon_transition(remain_accept, accept_state)
