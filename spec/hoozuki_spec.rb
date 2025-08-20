@@ -63,7 +63,7 @@ RSpec.describe Hoozuki do
         expect(regex.match?('aaab')).to be true
       end
 
-      xit 'does not match "a" or "b"' do
+      it 'does not match "a" or "b"' do
         regex = described_class.new(pattern)
         expect(regex.match?('a')).to be false
         expect(regex.match?('b')).to be false

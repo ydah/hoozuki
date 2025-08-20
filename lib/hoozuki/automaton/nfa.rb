@@ -80,11 +80,15 @@ class Hoozuki
             first_nfa = new_from_node(node.children.first, state)
             node.children.drop(1).each_with_object(first_nfa) do |child_node, chain_nfa|
               next_nfa = new_from_node(child_node, state)
+              chain_nfa.transitions.merge(next_nfa.transitions)
               chain_nfa.accept.each do |accept_state|
                 chain_nfa.add_epsilon_transition(accept_state, next_nfa.start)
               end
               chain_nfa.accept.clear
-              chain_nfa.merge_nfa(next_nfa)
+              next_nfa.accept.each do |accept_state|
+                chain_nfa.accept << accept_state
+              end
+              chain_nfa
             end
           end
         end
