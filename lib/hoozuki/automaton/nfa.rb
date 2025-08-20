@@ -70,7 +70,7 @@ class Hoozuki
             remain2 = new_from_node(node.children[1], state)
             start_state = state.new_state
             accepts = remain1.accept if remain1.respond_to?(:accept)
-            accepts = accepts | remain2.accept if remain2.respond_to?(:accept)
+            accepts |= remain2.accept if remain2.respond_to?(:accept)
             nfa = new(start_state, accepts)
             nfa.merge_nfa(remain1)
             nfa.merge_nfa(remain2)
@@ -79,14 +79,13 @@ class Hoozuki
             nfa
           when Node::Concatenation
             first_nfa = new_from_node(node.children.first, state)
-            node.children.drop(1).reduce(first_nfa) do |chain_nfa, child_node|
+            node.children.drop(1).each_with_object(first_nfa) do |child_node, chain_nfa|
               next_nfa = new_from_node(child_node, state)
               chain_nfa.accept.each do |accept_state|
                 chain_nfa.add_epsilon_transition(accept_state, next_nfa.start)
               end
               chain_nfa.accept.clear
               chain_nfa.merge_nfa(next_nfa)
-              chain_nfa
             end
           end
         end
@@ -97,22 +96,18 @@ class Hoozuki
         to_visit = []
 
         start.each do |state|
-          unless visited.include?(state)
-            to_visit << state
-          end
+          to_visit << state unless visited.include?(state)
         end
 
-        while !to_visit.empty?
+        until to_visit.empty?
           state = to_visit.shift
 
-          unless visited.include?(state)
-            visited << state
+          next if visited.include?(state)
 
-            transitions.each do |from, label, to|
-              if from == state && label.nil? && !visited.include?(to)
-                to_visit << to
-              end
-            end
+          visited << state
+
+          transitions.each do |from, label, to|
+            to_visit << to if from == state && label.nil? && !visited.include?(to)
           end
         end
 

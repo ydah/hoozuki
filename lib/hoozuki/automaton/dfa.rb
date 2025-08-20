@@ -29,17 +29,13 @@ class Hoozuki
 
           while (current_nfa_states = queue.shift)
             current_dfa_id = dfa_states[current_nfa_states]
-            if current_nfa_states.any? { |state| nfa_accept_set.include?(state) }
-              dfa.accept.merge([current_dfa_id])
-            end
+            dfa.accept.merge([current_dfa_id]) if current_nfa_states.any? { |state| nfa_accept_set.include?(state) }
 
             transitions_map = Hash.new { |h, k| h[k] = Set.new }
 
             current_nfa_states.each do |state|
               nfa.transitions.each do |from, label, to|
-                if from == state && !label.nil?
-                  transitions_map[label].merge(nfa.epsilon_closure(Set[to]))
-                end
+                transitions_map[label].merge(nfa.epsilon_closure(Set[to])) if from == state && !label.nil?
               end
             end
 
@@ -66,7 +62,7 @@ class Hoozuki
           return next_state
         end
 
-        @transitions.find { |from, label, _| from == current && label == input}&.last
+        @transitions.find { |from, label, _| from == current && label == input }&.last
       end
 
       def match?(input, use_cache)

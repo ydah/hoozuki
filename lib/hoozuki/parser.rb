@@ -16,7 +16,8 @@ class Hoozuki
     def parse
       ast = parse_choice
 
-      raise "Unexpected end of pattern" unless eol?
+      raise 'Unexpected end of pattern' unless eol?
+
       ast
     end
 
@@ -44,15 +45,14 @@ class Hoozuki
       end
 
       return children.first if children.size == 1
+
       Hoozuki::Node::Choice.new(children)
     end
 
     def parse_concatenation
       children = []
 
-      until stop_parsing_concatenation?
-        children << parse_repetition
-      end
+      children << parse_repetition until stop_parsing_concatenation?
 
       return children.first if children.size == 1
 
@@ -67,14 +67,16 @@ class Hoozuki
       child = parse_group
 
       quantifier = nil
-      if current == '*'
+      case current
+      when '*'
         quantifier = :zero_or_more
-      elsif current == '+'
+      when '+'
         quantifier = :one_or_more
-      elsif current == '?'
+      when '?'
         quantifier = :optional
       end
       return child if quantifier.nil?
+
       next_char
 
       Hoozuki::Node::Repetition.new(child, quantifier)
@@ -82,22 +84,21 @@ class Hoozuki
 
     def parse_group
       return parse_literal if current != '('
-      next_char
 
+      next_char
       child = parse_choice
+      raise 'Expected closing parenthesis' unless current == ')'
 
-      raise "Expected closing parenthesis" unless current == ')'
       next_char
-
       child
     end
 
     def parse_literal
-      raise "Unexpected end of pattern" if eol?
+      raise 'Unexpected end of pattern' if eol?
 
       if current == '\\'
         next_char
-        raise "Unexpected end of pattern" if eol?
+        raise 'Unexpected end of pattern' if eol?
 
         value = current
         case value

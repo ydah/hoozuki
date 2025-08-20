@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Hoozuki do
-  describe "#match?" do
+  describe '#match?' do
     subject { described_class.new(pattern).match?(value) }
 
     context 'with pattern "a|b*"' do
