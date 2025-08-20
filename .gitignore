@@ -1,0 +1,10 @@
+/.DS_Store
+/.bundle/
+/.irbrc
+/.vscode/
+/Gemfile.lock
+/coverage/
+/pkg/
+/tmp/
+/vendor/bundle
+/.idea/
