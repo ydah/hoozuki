@@ -4,8 +4,27 @@ RSpec.describe Hoozuki do
   describe '#match?' do
     subject { described_class.new(pattern).match?(value) }
 
-    context 'with pattern "a|b*"' do
-      let(:pattern) { 'a|b*' }
+    context 'with basic concatenation' do
+      let(:pattern) { 'abc' }
+
+      context 'when text is "abc"' do
+        let(:value) { 'abc' }
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "ab"' do
+        let(:value) { 'ab' }
+        it { is_expected.to be false }
+      end
+
+      context 'when text is "abcd"' do
+        let(:value) { 'abcd' }
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'with alternation "|"' do
+      let(:pattern) { 'a|b' }
 
       context 'when text is "a"' do
         let(:value) { 'a' }
@@ -17,85 +36,175 @@ RSpec.describe Hoozuki do
         it { is_expected.to be true }
       end
 
-      context 'when text is "bb"' do
-        let(:value) { 'bb' }
-        it { is_expected.to be true }
-      end
-
-      context 'when text is "bbb"' do
-        let(:value) { 'bbb' }
-        it { is_expected.to be true }
-      end
-
-      context 'when text is "" (empty)' do
-        let(:value) { '' }
-        it { is_expected.to be true }
-      end
-
-      context 'when text is "c"' do
-        let(:value) { 'c' }
+      context 'when text is "ab"' do
+        let(:value) { 'ab' }
         it { is_expected.to be false }
       end
     end
 
-    context 'with pattern "ab(cd|)"' do
+    context 'with quantifiers "*", "+", "?"' do
+      context 'with pattern "b*"' do
+        let(:pattern) { 'b*' }
+
+        context 'when text is "" (empty)' do
+          let(:value) { '' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "b"' do
+          let(:value) { 'b' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "bbb"' do
+          let(:value) { 'bbb' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "c"' do
+          let(:value) { 'c' }
+          it { is_expected.to be false }
+        end
+      end
+
+      context 'with pattern "a+"' do
+        let(:pattern) { 'a+' }
+
+        context 'when text is "a"' do
+          let(:value) { 'a' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "aaa"' do
+          let(:value) { 'aaa' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "" (empty)' do
+          let(:value) { '' }
+          it { is_expected.to be false }
+        end
+      end
+
+      context 'with pattern "c?"' do
+        let(:pattern) { 'c?' }
+
+        context 'when text is "" (empty)' do
+          let(:value) { '' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "c"' do
+          let(:value) { 'c' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "cc"' do
+          let(:value) { 'cc' }
+          it { is_expected.to be false }
+        end
+      end
+    end
+
+    context 'with grouping "()"' do
       let(:pattern) { 'ab(cd|)' }
 
-      it 'matches "abcd" and "ab"' do
-        regex = described_class.new(pattern)
-        expect(regex.match?('abcd')).to be true
-        expect(regex.match?('ab')).to be true
+      context 'when text is "abcd"' do
+        let(:value) { 'abcd' }
+        it { is_expected.to be true }
       end
 
-      it 'does not match "abc"' do
-        regex = described_class.new(pattern)
-        expect(regex.match?('abc')).to be false
-      end
-    end
-
-    context 'with pattern "a+b"' do
-      let(:pattern) { 'a+b' }
-
-      it 'matches "ab", "aab", "aaab"' do
-        regex = described_class.new(pattern)
-        expect(regex.match?('ab')).to be true
-        expect(regex.match?('aab')).to be true
-        expect(regex.match?('aaab')).to be true
+      context 'when text is "ab"' do
+        let(:value) { 'ab' }
+        it { is_expected.to be true }
       end
 
-      it 'does not match "a" or "b"' do
-        regex = described_class.new(pattern)
-        expect(regex.match?('a')).to be false
-        expect(regex.match?('b')).to be false
+      context 'when text is "abc"' do
+        let(:value) { 'abc' }
+        it { is_expected.to be false }
       end
     end
 
-    context 'with literal pattern "a|b*"' do
-      let(:pattern) { 'a\\|b\\*' }
+    context 'with escape sequences "\\"' do
+      context 'with pattern "a\\|b\\*"' do
+        let(:pattern) { 'a\\|b\\*' }
 
-      it 'matches the literal string "a|b*"' do
-        regex = described_class.new(pattern)
-        expect(regex.match?('a|b*')).to be true
+        context 'when text is "a|b*"' do
+          let(:value) { 'a|b*' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "ab"' do
+          let(:value) { 'ab' }
+          it { is_expected.to be false }
+        end
       end
 
-      it 'does not match "ab"' do
-        regex = described_class.new(pattern)
-        expect(regex.match?('ab')).to be false
+      context 'with pattern "\\(a\\+\\)"' do
+        let(:pattern) { '\\(a\\+\\)' }
+
+        context 'when text is "(a+)"' do
+          let(:value) { '(a+)' }
+          it { is_expected.to be true }
+        end
+
+        context 'when text is "a"' do
+          let(:value) { 'a' }
+          it { is_expected.to be false }
+        end
       end
     end
 
-    context 'with multi-byte characters pattern "正規表現(太郎|次郎)"' do
-      let(:pattern) { '正規表現(太郎|次郎)' }
+    context 'with a combination of features' do
+      let(:pattern) { 'a|b*c(de)?' }
 
-      it 'matches "正規表現太郎" and "正規表現次郎"' do
-        regex = described_class.new(pattern)
-        expect(regex.match?('正規表現太郎')).to be true
-        expect(regex.match?('正規表現次郎')).to be true
+      context 'when text is "a"' do
+        let(:value) { 'a' }
+        it { is_expected.to be true }
       end
 
-      it 'does not match "正規表現三郎"' do
-        regex = described_class.new(pattern)
-        expect(regex.match?('正規表現三郎')).to be false
+      context 'when text is "bc"' do
+        let(:value) { 'bc' }
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "cde"' do
+        let(:value) { 'cde' }
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "bbbcde"' do
+        let(:value) { 'bbbcde' }
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "bd"' do
+        let(:value) { 'bd' }
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'with multi-byte characters' do
+      let(:pattern) { '(こん|おつ)*やっぴー' }
+
+      context 'when text is "こんやっぴー"' do
+        let(:value) { 'こんやっぴー' }
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "おつやっぴー"' do
+        let(:value) { 'おつやっぴー' }
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "こんおつやっぴー"' do
+        let(:value) { 'こんおつやっぴー' }
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "こんこんきーつね"' do
+        let(:value) { 'こんこんきーつね' }
+        it { is_expected.to be false }
       end
     end
   end
