@@ -12,10 +12,10 @@ gem install hoozuki
 
 ```ruby
 require 'hoozuki'
-regex = Hoozuki::Regex.new('a(bc|de)f')
-puts regex.match?('abcdef') # => true
-puts regex.match?('adef')   # => true
-puts regex.match?('xyz')    # => false
+regex = Hoozuki.new('a(bc|de)*f')
+regex.match?('abcdef') # => true
+regex.match?('adef')   # => true
+regex.match?('xyz')    # => false
 ```
 
 ## License
