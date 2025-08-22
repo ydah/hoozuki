@@ -41,13 +41,13 @@ RSpec.describe Hoozuki do
     context 'with pattern "ab(cd|)"' do
       let(:pattern) { 'ab(cd|)' }
 
-      xit 'matches "abcd" and "ab"' do
+      it 'matches "abcd" and "ab"' do
         regex = described_class.new(pattern)
         expect(regex.match?('abcd')).to be true
         expect(regex.match?('ab')).to be true
       end
 
-      xit 'does not match "abc"' do
+      it 'does not match "abc"' do
         regex = described_class.new(pattern)
         expect(regex.match?('abc')).to be false
       end

@@ -45,6 +45,7 @@ class Hoozuki
       end
 
       return children.first if children.size == 1
+      return Hoozuki::Node::Epsilon.new if children.empty?
 
       Hoozuki::Node::Choice.new(children)
     end
@@ -55,6 +56,7 @@ class Hoozuki
       children << parse_repetition until stop_parsing_concatenation?
 
       return children.first if children.size == 1
+      return Hoozuki::Node::Epsilon.new if children.empty?
 
       Hoozuki::Node::Concatenation.new(children)
     end

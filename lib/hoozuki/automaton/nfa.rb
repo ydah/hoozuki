@@ -24,6 +24,12 @@ class Hoozuki
             nfa = new(start_state, [accept_state])
             nfa.add_transition(start_state, node.value, accept_state)
             nfa
+          when Node::Epsilon
+            start_state = state.new_state
+            accept_state = state.new_state
+            nfa = new(start_state, [accept_state])
+            nfa.add_epsilon_transition(start_state, accept_state)
+            nfa
           when Node::Repetition
             if node.zero_or_more?
               remain = new_from_node(node.child, state)
