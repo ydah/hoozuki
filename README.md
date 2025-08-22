@@ -1,4 +1,4 @@
-# Hoozuki (鬼灯)
+# Hoozuki (鬼灯) [![Gem Version](https://badge.fury.io/rb/hoozuki.svg)](https://badge.fury.io/rb/hoozuki) [![CI](https://github.com/ydah/hoozuki/actions/workflows/ci.yml/badge.svg)](https://github.com/ydah/hoozuki/actions/workflows/ci.yml)
 
 A hobby regex engine written in Ruby. Designed to be simple and efficient for educational purposes.
 
