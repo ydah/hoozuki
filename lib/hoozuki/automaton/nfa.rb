@@ -5,7 +5,7 @@ require 'sorted_set'
 class Hoozuki
   module Automaton
     class NFA
-      attr_reader :start, :accept, :transitions
+      attr_accessor :start, :accept, :transitions
 
       def initialize(start, accept)
         @start = start
@@ -83,19 +83,18 @@ class Hoozuki
             nfa.add_epsilon_transition(start_state, remain2.start)
             nfa
           when Node::Concatenation
-            first_nfa = new_from_node(node.children.first, state)
-            node.children.drop(1).each_with_object(first_nfa) do |child_node, chain_nfa|
-              next_nfa = new_from_node(child_node, state)
-              chain_nfa.transitions.merge(next_nfa.transitions)
-              chain_nfa.accept.each do |accept_state|
-                chain_nfa.add_epsilon_transition(accept_state, next_nfa.start)
+            nfas = node.children.map { |child| new_from_node(child, state) }
+            nfa = nfas.first
+            nfas.drop(1).each do |next_nfa|
+              nfa.transitions.merge(next_nfa.transitions)
+              nfa.accept.each do |accept_state|
+                nfa.add_epsilon_transition(accept_state, next_nfa.start)
               end
-              chain_nfa.accept.clear
-              next_nfa.accept.each do |accept_state|
-                chain_nfa.accept << accept_state
-              end
-              chain_nfa
+              nfa.accept = next_nfa.accept
             end
+            nfa
+          else
+            raise ArgumentError, "Unsupported node type: #{node.class}"
           end
         end
       end
