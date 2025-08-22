@@ -124,11 +124,7 @@ class Hoozuki
       end
 
       def epsilon_closure(start)
-        bit_start = Set.new
-        start.each do |state|
-          bit_start << state
-        end
-        bit_result = epsilon_closure_with_bitset(bit_start)
+        bit_result = epsilon_closure_with_bitset(start.to_set)
         ::SortedSet.new(bit_result)
       end
 
