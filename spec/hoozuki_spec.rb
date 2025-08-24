@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Hoozuki do
-  describe '#match?' do
-    subject { described_class.new(pattern).match?(value) }
+  shared_examples 'regex matching behavior' do |mode|
+    subject { described_class.new(pattern, method: mode).match?(value) }
 
     context 'with basic concatenation' do
       let(:pattern) { 'abc' }
@@ -206,6 +206,16 @@ RSpec.describe Hoozuki do
         let(:value) { 'こんこんきーつね' }
         it { is_expected.to be false }
       end
+    end
+  end
+
+  describe '#match?' do
+    context 'with :vm mode' do
+      include_examples 'regex matching behavior', :vm
+    end
+
+    context 'with :dfa mode' do
+      include_examples 'regex matching behavior', :dfa
     end
   end
 end
