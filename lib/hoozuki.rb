@@ -8,12 +8,12 @@ require_relative 'hoozuki/version'
 require_relative 'hoozuki/vm'
 
 class Hoozuki
-  def initialize(input, method: :dfa)
+  def initialize(input, engine: :dfa)
     @input = input
-    @method = method
+    @engine = engine
 
     ast = Hoozuki::Parser.new(input).parse
-    case method
+    case engine
     when :dfa
       nfa = Automaton::NFA.new_from_node(ast, Automaton::StateID.new(0))
       @dfa = Automaton::DFA.from_nfa(nfa, use_cache?(input))
@@ -25,13 +25,13 @@ class Hoozuki
   end
 
   def match?(input)
-    case @method
+    case @engine
     when :dfa
       @dfa.match?(input, use_cache?(input))
     when :vm
       VM::Evaluator.evaluate(@bytecode, input, 0, 0)
     else
-      raise ArgumentError, "Unknown method: #{@method}"
+      raise ArgumentError, "Unknown engine: #{@engine}"
     end
   end
 
