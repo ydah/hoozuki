@@ -23,6 +23,7 @@ class Hoozuki
 
       def <=>(other)
         return nil unless other.is_a?(StateID)
+
         @id <=> other.id
       end
     end

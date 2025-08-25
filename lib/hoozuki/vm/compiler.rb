@@ -51,19 +51,18 @@ class Hoozuki
           jump = @pc
           emit(Hoozuki::Instruction::Jmp.new(0))
 
-          if @instructions[split].is_a?(Hoozuki::Instruction::Split)
-            @instructions[split].right = @pc
-          else
+          unless @instructions[split].is_a?(Hoozuki::Instruction::Split)
             raise "Instruction at pc #{split} is not a Split"
           end
 
+          @instructions[split].right = @pc
+
           _compile(ast.children.last)
 
-          if @instructions[jump].is_a?(Hoozuki::Instruction::Jmp)
-            @instructions[jump].target = @pc
-          else
-            raise "Instruction at pc #{jump} is not a Jmp"
-          end
+          raise "Instruction at pc #{jump} is not a Jmp" unless @instructions[jump].is_a?(Hoozuki::Instruction::Jmp)
+
+          @instructions[jump].target = @pc
+
         when Node::Concatenation
           ast.children.each do |child|
             _compile(child)

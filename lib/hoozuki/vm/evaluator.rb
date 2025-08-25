@@ -17,16 +17,16 @@ class Hoozuki
           case inst
           when Hoozuki::Instruction::Char
             return false if input_pos >= input.size || input[input_pos] != inst.char
+
             input_pos += 1
             pc += 1
           when Hoozuki::Instruction::Jmp
             pc = inst.target
           when Hoozuki::Instruction::Split
-            if _evaluate(instructions, input, input_pos, inst.left)
-              return true
-            else
-              pc = inst.right
-            end
+            return true if _evaluate(instructions, input, input_pos, inst.left)
+
+            pc = inst.right
+
           when Hoozuki::Instruction::Match
             return input_pos == input.length
           else
