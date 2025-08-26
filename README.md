@@ -2,7 +2,7 @@
 
 A hobby regex engine written in Ruby. Designed to be simple and efficient for educational purposes.
 Currently supports 2 engines:
-- NFA Based Engine
+- DFA Based Engine
 - VM Based Engine
 
 ## Installation
