@@ -2,7 +2,7 @@
 
 require 'sorted_set'
 
-class Hoozuki
+module Hoozuki
   module Automaton
     class NFA
       attr_accessor :start, :accept, :transitions

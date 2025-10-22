@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Hoozuki
+module Hoozuki
   module Automaton
     class DFA
       attr_reader :start, :accept, :transitions

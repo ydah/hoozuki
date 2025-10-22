@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Hoozuki
+module Hoozuki
   module Node
     class Concatenation
       attr_reader :children

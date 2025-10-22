@@ -2,7 +2,7 @@
 
 RSpec.describe Hoozuki do
   shared_examples 'regex matching behavior' do |mode|
-    subject { described_class.new(pattern, engine: mode).match?(value) }
+    subject { described_class.match?(pattern, value, engine: mode) }
 
     context 'with basic concatenation' do
       let(:pattern) { 'abc' }
