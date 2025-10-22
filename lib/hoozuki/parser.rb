@@ -676,12 +676,12 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 57)
   def tokenize
     while @offset < @pattern.length
       char = @pattern[@offset]
-      
+
       case char
       when '\\'
         @offset += 1
         raise 'Unexpected end of pattern' if @offset >= @pattern.length
-        
+
         escaped = @pattern[@offset]
         case escaped
         when '(', ')', '|', '*', '+', '?', '\\'
@@ -693,7 +693,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 57)
       when '('
         @tokens << [:LPAREN, char]
         @offset += 1
-        # LPARENの直後にPIPEがある場合、EPSILONトークンを挿入
+        # Insert EPSILON token if PIPE immediately follows LPAREN
         if @offset < @pattern.length && @pattern[@offset] == '|'
           @tokens << [:EPSILON, nil]
         end
@@ -703,7 +703,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 57)
       when '|'
         @tokens << [:PIPE, char]
         @offset += 1
-        # PIPEの後にRPAREN, EOF, または別のPIPEがある場合、EPSILONトークンを挿入
+        # Insert EPSILON token if PIPE is followed by RPAREN, EOF, or another PIPE
         if @offset >= @pattern.length || @pattern[@offset] == ')' || @pattern[@offset] == '|'
           @tokens << [:EPSILON, nil]
         end
@@ -721,7 +721,7 @@ module_eval(<<'...end parser.y/module_eval...', 'parser.y', 57)
         @offset += 1
       end
     end
-    
+
     @tokens << [false, false]  # EOF marker
   end
 
@@ -872,18 +872,18 @@ module_eval(<<'.,.,', 'parser.y', 21)
 
 module_eval(<<'.,.,', 'parser.y', 23)
   def _reduce_6(val, _values, result)
-                       children = []
-                   if val[0].is_a?(Hoozuki::Node::Epsilon)
-                     result = val[1]
-                   elsif val[0].is_a?(Hoozuki::Node::Concatenation)
-                     children.concat(val[0].children)
-                     children << val[1]
-                     result = Hoozuki::Node::Concatenation.new(children)
-                   else
-                     children << val[0]
-                     children << val[1]
-                     result = Hoozuki::Node::Concatenation.new(children)
-                   end
+            children = []
+        if val[0].is_a?(Hoozuki::Node::Epsilon)
+          result = val[1]
+        elsif val[0].is_a?(Hoozuki::Node::Concatenation)
+          children.concat(val[0].children)
+          children << val[1]
+          result = Hoozuki::Node::Concatenation.new(children)
+        else
+          children << val[0]
+          children << val[1]
+          result = Hoozuki::Node::Concatenation.new(children)
+        end
 
     result
   end
