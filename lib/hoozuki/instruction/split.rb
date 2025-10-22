@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Hoozuki
+module Hoozuki
   module Instruction
     class Split
       attr_accessor :left, :right

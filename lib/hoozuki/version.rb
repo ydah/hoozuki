@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-class Hoozuki
+module Hoozuki
   VERSION = '0.2.0'
 end
