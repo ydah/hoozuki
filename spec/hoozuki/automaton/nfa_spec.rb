@@ -18,6 +18,81 @@ RSpec.describe Hoozuki::Automaton::NFA do
         expect(nfa).to be_a(described_class)
         expect(nfa.start).to be_a(Hoozuki::Automaton::StateID)
         expect(nfa.accept).to be_an(Array)
+        expect(nfa.accept.length).to eq(1)
+        expect(nfa.transitions.size).to eq(1)
+      end
+    end
+
+    context 'with Epsilon node' do
+      it 'creates NFA from epsilon node' do
+        node = Hoozuki::Node::Epsilon.new
+        nfa = described_class.new_from_node(node, state)
+
+        expect(nfa).to be_a(described_class)
+        expect(nfa.accept.length).to eq(1)
+        expect(nfa.transitions.size).to eq(1)
+        expect(nfa.transitions.first[1]).to be_nil
+      end
+    end
+
+    context 'with Concatenation node' do
+      it 'creates NFA from concatenation node' do
+        node = Hoozuki::Node::Concatenation.new([
+          Hoozuki::Node::Literal.new('a'),
+          Hoozuki::Node::Literal.new('b')
+        ])
+        nfa = described_class.new_from_node(node, state)
+
+        expect(nfa).to be_a(described_class)
+        expect(nfa.accept.length).to eq(1)
+      end
+    end
+
+    context 'with Choice node' do
+      it 'creates NFA from choice node' do
+        node = Hoozuki::Node::Choice.new([
+          Hoozuki::Node::Literal.new('a'),
+          Hoozuki::Node::Literal.new('b')
+        ])
+        nfa = described_class.new_from_node(node, state)
+
+        expect(nfa).to be_a(described_class)
+        expect(nfa.accept.length).to eq(2)
+      end
+    end
+
+    context 'with Repetition node' do
+      it 'creates NFA from zero-or-more repetition' do
+        node = Hoozuki::Node::Repetition.new(
+          Hoozuki::Node::Literal.new('a'),
+          :zero_or_more
+        )
+        nfa = described_class.new_from_node(node, state)
+
+        expect(nfa).to be_a(described_class)
+        expect(nfa.accept.length).to eq(2)
+      end
+
+      it 'creates NFA from one-or-more repetition' do
+        node = Hoozuki::Node::Repetition.new(
+          Hoozuki::Node::Literal.new('a'),
+          :one_or_more
+        )
+        nfa = described_class.new_from_node(node, state)
+
+        expect(nfa).to be_a(described_class)
+        expect(nfa.accept.length).to eq(1)
+      end
+
+      it 'creates NFA from optional repetition' do
+        node = Hoozuki::Node::Repetition.new(
+          Hoozuki::Node::Literal.new('a'),
+          :optional
+        )
+        nfa = described_class.new_from_node(node, state)
+
+        expect(nfa).to be_a(described_class)
+        expect(nfa.accept.length).to eq(2)
       end
     end
 
