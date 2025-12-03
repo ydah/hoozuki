@@ -21,9 +21,18 @@ module Hoozuki
         end
       end
 
-      def epsilon_closure(start)
-        closure = compute_closure(start.to_set)
-        ::SortedSet.new(closure)
+      def epsilon_closure(start_states)
+        visited = start_states.dup
+        queue = start_states.to_a
+
+        while (current = queue.shift)
+          destinations = @transitions.select { |from, label, _| from == current && label.nil? }.map(&:last)
+          destinations.each do |dest|
+            queue << dest if visited.add?(dest)
+          end
+        end
+
+        ::SortedSet.new(visited)
       end
 
       def merge_transitions(other)
@@ -36,32 +45,6 @@ module Hoozuki
 
       def add_transition(from, char, to)
         @transitions << [from, char, to]
-      end
-
-      private
-
-      def compute_closure(start_states)
-        visited = Set.new
-        to_visit = start_states.to_a
-
-        until to_visit.empty?
-          state = to_visit.shift
-          next if visited.include?(state)
-
-          visited << state
-
-          epsilon_from(state).each do |target_state|
-            to_visit << target_state unless visited.include?(target_state)
-          end
-        end
-
-        visited
-      end
-
-      def epsilon_from(state)
-        transitions.each_with_object([]) do |(from, label, to), result|
-          result << to if from == state && label.nil?
-        end
       end
     end
   end
