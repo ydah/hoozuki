@@ -129,21 +129,21 @@ RSpec.describe Hoozuki::Parser do
       end
 
       it 'raises error for incomplete escape' do
-        expect { described_class.new.parse('\\') }.to raise_error
+        expect { described_class.new.parse('\\') }.to raise_error(RuntimeError)
       end
     end
 
     context 'with error cases' do
       it 'raises error for unmatched opening parenthesis' do
-        expect { described_class.new.parse('(abc') }.to raise_error
+        expect { described_class.new.parse('(abc') }.to raise_error(Racc::ParseError)
       end
 
       it 'raises error for unmatched closing parenthesis' do
-        expect { described_class.new.parse('abc)') }.to raise_error
+        expect { described_class.new.parse('abc)') }.to raise_error(Racc::ParseError)
       end
 
       it 'raises error for nested unmatched parentheses' do
-        expect { described_class.new.parse('((a)') }.to raise_error
+        expect { described_class.new.parse('((a)') }.to raise_error(Racc::ParseError)
       end
     end
 
