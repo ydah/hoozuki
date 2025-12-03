@@ -14,7 +14,7 @@ module Hoozuki
     ast = Parser.new.parse(input)
     case engine
     when :dfa
-      nfa = Automaton::NFA.new_from_node(ast, Automaton::StateID.new(0))
+      nfa = Automaton::NFA.from_node(ast, Automaton::StateID.new(0))
       Automaton::DFA.from_nfa(nfa, use_cache?(input))
     when :vm
       compiler = VM::Compiler.new

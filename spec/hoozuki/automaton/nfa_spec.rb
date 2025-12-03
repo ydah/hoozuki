@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 RSpec.describe Hoozuki::Automaton::NFA do
-  describe '.new_from_node' do
+  describe '.from_node' do
     let(:state) { Hoozuki::Automaton::StateID.new(0) }
 
     context 'with nil node' do
       it 'raises ArgumentError' do
-        expect { described_class.new_from_node(nil, state) }.to raise_error(ArgumentError, 'Node cannot be nil')
+        expect { described_class.from_node(nil, state) }.to raise_error(ArgumentError, 'Node cannot be nil')
       end
     end
 
     context 'with Literal node' do
       it 'creates NFA from literal node' do
         node = Hoozuki::Node::Literal.new('a')
-        nfa = described_class.new_from_node(node, state)
+        nfa = described_class.from_node(node, state)
 
         expect(nfa).to be_a(described_class)
         expect(nfa.start).to be_a(Hoozuki::Automaton::StateID)
@@ -26,7 +26,7 @@ RSpec.describe Hoozuki::Automaton::NFA do
     context 'with Epsilon node' do
       it 'creates NFA from epsilon node' do
         node = Hoozuki::Node::Epsilon.new
-        nfa = described_class.new_from_node(node, state)
+        nfa = described_class.from_node(node, state)
 
         expect(nfa).to be_a(described_class)
         expect(nfa.accept.length).to eq(1)
@@ -41,7 +41,7 @@ RSpec.describe Hoozuki::Automaton::NFA do
           Hoozuki::Node::Literal.new('a'),
           Hoozuki::Node::Literal.new('b')
         ])
-        nfa = described_class.new_from_node(node, state)
+        nfa = described_class.from_node(node, state)
 
         expect(nfa).to be_a(described_class)
         expect(nfa.accept.length).to eq(1)
@@ -54,7 +54,7 @@ RSpec.describe Hoozuki::Automaton::NFA do
           Hoozuki::Node::Literal.new('a'),
           Hoozuki::Node::Literal.new('b')
         ])
-        nfa = described_class.new_from_node(node, state)
+        nfa = described_class.from_node(node, state)
 
         expect(nfa).to be_a(described_class)
         expect(nfa.accept.length).to eq(2)
@@ -67,7 +67,7 @@ RSpec.describe Hoozuki::Automaton::NFA do
           Hoozuki::Node::Literal.new('a'),
           :zero_or_more
         )
-        nfa = described_class.new_from_node(node, state)
+        nfa = described_class.from_node(node, state)
 
         expect(nfa).to be_a(described_class)
         expect(nfa.accept.length).to eq(2)
@@ -78,7 +78,7 @@ RSpec.describe Hoozuki::Automaton::NFA do
           Hoozuki::Node::Literal.new('a'),
           :one_or_more
         )
-        nfa = described_class.new_from_node(node, state)
+        nfa = described_class.from_node(node, state)
 
         expect(nfa).to be_a(described_class)
         expect(nfa.accept.length).to eq(1)
@@ -89,7 +89,7 @@ RSpec.describe Hoozuki::Automaton::NFA do
           Hoozuki::Node::Literal.new('a'),
           :optional
         )
-        nfa = described_class.new_from_node(node, state)
+        nfa = described_class.from_node(node, state)
 
         expect(nfa).to be_a(described_class)
         expect(nfa.accept.length).to eq(2)
@@ -101,7 +101,7 @@ RSpec.describe Hoozuki::Automaton::NFA do
         node = Hoozuki::Node::Literal.new('x')
         expect(node).to receive(:to_nfa).with(state).and_call_original
 
-        described_class.new_from_node(node, state)
+        described_class.from_node(node, state)
       end
     end
   end

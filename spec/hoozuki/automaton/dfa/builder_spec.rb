@@ -7,7 +7,7 @@ RSpec.describe Hoozuki::Automaton::DFA::Builder do
     context 'with simple NFA' do
       it 'builds a DFA' do
         node = Hoozuki::Node::Literal.new('a')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         builder = described_class.new(nfa, false)
         dfa = builder.call
 
@@ -21,7 +21,7 @@ RSpec.describe Hoozuki::Automaton::DFA::Builder do
     context 'with NFA containing epsilon transitions' do
       it 'eliminates epsilon transitions' do
         node = Hoozuki::Parser.new.parse('a?')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         builder = described_class.new(nfa, false)
         dfa = builder.call
 
@@ -34,7 +34,7 @@ RSpec.describe Hoozuki::Automaton::DFA::Builder do
     context 'with alternation' do
       it 'creates correct number of states' do
         node = Hoozuki::Parser.new.parse('a|b')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         builder = described_class.new(nfa, false)
         dfa = builder.call
 
@@ -45,7 +45,7 @@ RSpec.describe Hoozuki::Automaton::DFA::Builder do
     context 'with repetition' do
       it 'handles loops correctly' do
         node = Hoozuki::Parser.new.parse('a*')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         builder = described_class.new(nfa, false)
         dfa = builder.call
 
@@ -56,7 +56,7 @@ RSpec.describe Hoozuki::Automaton::DFA::Builder do
     context 'with concatenation' do
       it 'builds sequential transitions' do
         node = Hoozuki::Parser.new.parse('abc')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         builder = described_class.new(nfa, false)
         dfa = builder.call
 
@@ -67,7 +67,7 @@ RSpec.describe Hoozuki::Automaton::DFA::Builder do
     context 'with complex pattern' do
       it 'builds correct DFA structure' do
         node = Hoozuki::Parser.new.parse('(a|b)*c')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         builder = described_class.new(nfa, false)
         dfa = builder.call
 

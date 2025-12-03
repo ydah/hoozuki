@@ -14,7 +14,7 @@ module Hoozuki
       end
 
       class << self
-        def new_from_node(node, state)
+        def from_node(node, state)
           raise ArgumentError, 'Node cannot be nil' if node.nil?
 
           node.to_nfa(state)
@@ -22,7 +22,7 @@ module Hoozuki
       end
 
       def epsilon_closure(start)
-        closure = calculate_epsilon_closure(start.to_set)
+        closure = compute_closure(start.to_set)
         ::SortedSet.new(closure)
       end
 
@@ -40,7 +40,7 @@ module Hoozuki
 
       private
 
-      def calculate_epsilon_closure(start_states)
+      def compute_closure(start_states)
         visited = Set.new
         to_visit = start_states.to_a
 
@@ -50,7 +50,7 @@ module Hoozuki
 
           visited << state
 
-          epsilon_transitions_from(state).each do |target_state|
+          epsilon_from(state).each do |target_state|
             to_visit << target_state unless visited.include?(target_state)
           end
         end
@@ -58,7 +58,7 @@ module Hoozuki
         visited
       end
 
-      def epsilon_transitions_from(state)
+      def epsilon_from(state)
         transitions.each_with_object([]) do |(from, label, to), result|
           result << to if from == state && label.nil?
         end

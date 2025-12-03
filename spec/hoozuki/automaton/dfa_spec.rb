@@ -6,7 +6,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
 
     it 'converts simple NFA to DFA' do
       node = Hoozuki::Node::Literal.new('a')
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       expect(dfa).to be_a(described_class)
@@ -20,7 +20,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
         Hoozuki::Node::Literal.new('a'),
         Hoozuki::Node::Literal.new('b')
       ])
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       expect(dfa.start).to be_a(Integer)
@@ -32,7 +32,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
         Hoozuki::Node::Literal.new('a'),
         Hoozuki::Node::Literal.new('b')
       ])
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       expect(dfa.start).to be_a(Integer)
@@ -41,7 +41,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
 
     it 'handles alternation patterns' do
       node = Hoozuki::Parser.new.parse('a|b')
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       expect(dfa.transitions.size).to be >= 2
@@ -49,7 +49,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
 
     it 'handles repetition patterns' do
       node = Hoozuki::Parser.new.parse('a*')
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       expect(dfa.accept).to include(dfa.start)
@@ -61,7 +61,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
 
     it 'matches using DFA for single literal' do
       node = Hoozuki::Node::Literal.new('a')
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       expect(dfa.match?('a', false)).to be true
@@ -73,7 +73,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
         Hoozuki::Node::Literal.new('a'),
         Hoozuki::Node::Literal.new('b')
       ])
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       expect(dfa.match?('a', false)).to be true
@@ -86,7 +86,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
         Hoozuki::Node::Literal.new('a'),
         Hoozuki::Node::Literal.new('b')
       ])
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       expect(dfa.match?('ab', false)).to be true
@@ -97,7 +97,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
     context 'with simple literal' do
       it 'matches exact string' do
         node = Hoozuki::Parser.new.parse('abc')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         dfa = described_class.from_nfa(nfa, false)
 
         expect(dfa.match?('abc', false)).to be true
@@ -105,7 +105,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
 
       it 'does not match different string' do
         node = Hoozuki::Parser.new.parse('abc')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         dfa = described_class.from_nfa(nfa, false)
 
         expect(dfa.match?('abd', false)).to be false
@@ -115,7 +115,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
     context 'with alternation' do
       it 'matches either branch' do
         node = Hoozuki::Parser.new.parse('a|b')
-        nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+        nfa = Hoozuki::Automaton::NFA.from_node(node, state)
         dfa = described_class.from_nfa(nfa, false)
 
         expect(dfa.match?('a', false)).to be true
@@ -130,7 +130,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
 
     it 'finds correct next state' do
       node = Hoozuki::Parser.new.parse('a')
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       next_state = dfa.next_transition(dfa.start, 'a', false)
@@ -139,7 +139,7 @@ RSpec.describe Hoozuki::Automaton::DFA do
 
     it 'returns nil for invalid transition' do
       node = Hoozuki::Parser.new.parse('a')
-      nfa = Hoozuki::Automaton::NFA.new_from_node(node, state)
+      nfa = Hoozuki::Automaton::NFA.from_node(node, state)
       dfa = described_class.from_nfa(nfa, false)
 
       next_state = dfa.next_transition(dfa.start, 'b', false)
