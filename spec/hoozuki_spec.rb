@@ -244,10 +244,118 @@ RSpec.describe Hoozuki do
   describe '#match?' do
     context 'with :vm mode' do
       it_behaves_like 'regex matching behavior', :vm
+
+      context 'with VM-specific edge cases' do
+        it 'handles deeply nested structures' do
+          pattern = '((((a))))'
+          expect(described_class.match?(pattern, 'a', engine: :vm)).to be true
+          expect(described_class.match?(pattern, 'b', engine: :vm)).to be false
+        end
+
+        it 'handles multiple quantifiers in sequence' do
+          pattern = 'a*b+c?'
+          expect(described_class.match?(pattern, 'bc', engine: :vm)).to be true
+          expect(described_class.match?(pattern, 'abc', engine: :vm)).to be true
+          expect(described_class.match?(pattern, 'aaabbbbc', engine: :vm)).to be true
+          expect(described_class.match?(pattern, 'c', engine: :vm)).to be false
+        end
+
+        it 'handles empty alternations' do
+          pattern = 'a|'
+          expect(described_class.match?(pattern, 'a', engine: :vm)).to be true
+          expect(described_class.match?(pattern, '', engine: :vm)).to be true
+        end
+
+        it 'handles nested groups with quantifiers' do
+          pattern = '(ab)*'
+          expect(described_class.match?(pattern, '', engine: :vm)).to be true
+          expect(described_class.match?(pattern, 'ab', engine: :vm)).to be true
+          expect(described_class.match?(pattern, 'abab', engine: :vm)).to be true
+        end
+      end
     end
 
     context 'with :dfa mode' do
       it_behaves_like 'regex matching behavior', :dfa
+
+      context 'with DFA-specific edge cases' do
+        it 'handles deeply nested structures' do
+          pattern = '((((a))))'
+          expect(described_class.match?(pattern, 'a', engine: :dfa)).to be true
+          expect(described_class.match?(pattern, 'b', engine: :dfa)).to be false
+        end
+
+        it 'handles multiple quantifiers in sequence' do
+          pattern = 'a*b+c?'
+          expect(described_class.match?(pattern, 'bc', engine: :dfa)).to be true
+          expect(described_class.match?(pattern, 'abc', engine: :dfa)).to be true
+          expect(described_class.match?(pattern, 'aaabbbbc', engine: :dfa)).to be true
+          expect(described_class.match?(pattern, 'c', engine: :dfa)).to be false
+        end
+
+        it 'handles empty alternations' do
+          pattern = 'a|'
+          expect(described_class.match?(pattern, 'a', engine: :dfa)).to be true
+          expect(described_class.match?(pattern, '', engine: :dfa)).to be true
+        end
+
+        it 'handles nested groups with quantifiers' do
+          pattern = '(ab)*'
+          expect(described_class.match?(pattern, '', engine: :dfa)).to be true
+          expect(described_class.match?(pattern, 'ab', engine: :dfa)).to be true
+          expect(described_class.match?(pattern, 'abab', engine: :dfa)).to be true
+        end
+      end
+    end
+
+    context 'with common edge cases' do
+      it 'handles single character patterns for both engines' do
+        [:vm, :dfa].each do |engine|
+          expect(described_class.match?('x', 'x', engine: engine)).to be true
+          expect(described_class.match?('x', 'y', engine: engine)).to be false
+        end
+      end
+
+      it 'handles very long patterns for both engines' do
+        pattern = 'a' * 100
+        input = 'a' * 100
+
+        [:vm, :dfa].each do |engine|
+          expect(described_class.match?(pattern, input, engine: engine)).to be true
+        end
+      end
+
+      it 'handles patterns with all quantifier types for both engines' do
+        pattern = 'a*b+c?d'
+
+        [:vm, :dfa].each do |engine|
+          expect(described_class.match?(pattern, 'bd', engine: engine)).to be true
+          expect(described_class.match?(pattern, 'bcd', engine: engine)).to be true
+          expect(described_class.match?(pattern, 'abcd', engine: engine)).to be true
+          expect(described_class.match?(pattern, 'aaabbbbcd', engine: engine)).to be true
+        end
+      end
+    end
+  end
+
+  describe '#compile' do
+    context 'with :vm engine' do
+      it 'returns instruction array' do
+        result = described_class.compile('a', engine: :vm)
+        expect(result).to be_an(Array)
+        expect(result).to all(be_a(Hoozuki::Instruction::Char).or(be_a(Hoozuki::Instruction::Match)))
+      end
+
+      it 'raises error for unknown engine' do
+        expect { described_class.compile('a', engine: :unknown) }.to raise_error(ArgumentError, 'Unknown engine: unknown')
+      end
+    end
+
+    context 'with :dfa engine' do
+      it 'returns DFA object' do
+        result = described_class.compile('a', engine: :dfa)
+        expect(result).to be_a(Hoozuki::Automaton::DFA)
+      end
     end
   end
 end
