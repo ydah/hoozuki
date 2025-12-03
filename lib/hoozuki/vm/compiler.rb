@@ -70,18 +70,25 @@ module Hoozuki
       end
 
       def compile_choice(node)
+        if node.children.length == 2
+          compile_binary_choice(node.children[0], node.children[1])
+        else
+          first = node.children[0]
+          rest = Node::Choice.new(node.children[1..])
+          compile_binary_choice(first, rest)
+        end
+      end
+
+      def compile_binary_choice(left, right)
         split = @pc
         @pc += 1
         @instructions << Hoozuki::Instruction::Split.new(@pc, 0)
-        compile_node(node.children.first)
+        compile_node(left)
         jump = @pc
         emit(Hoozuki::Instruction::Jmp.new(0))
-
         validate_split_instruction(split)
         @instructions[split].right = @pc
-
-        compile_node(node.children.last)
-
+        compile_node(right)
         validate_jmp_instruction(jump)
         @instructions[jump].target = @pc
       end

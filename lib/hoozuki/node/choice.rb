@@ -10,16 +10,14 @@ module Hoozuki
       end
 
       def to_nfa(state)
-        left_nfa = @children[0].to_nfa(state)
-        right_nfa = @children[1].to_nfa(state)
+        child_nfas = @children.map { |child| child.to_nfa(state) }
         start_state = state.new_state
-        accepts = left_nfa.accept | right_nfa.accept
-
+        accepts = child_nfas.flat_map(&:accept).to_set
         nfa = Automaton::NFA.new(start_state, accepts)
-        nfa.merge_transitions(left_nfa)
-        nfa.merge_transitions(right_nfa)
-        nfa.add_epsilon_transition(start_state, left_nfa.start)
-        nfa.add_epsilon_transition(start_state, right_nfa.start)
+        child_nfas.each do |child_nfa|
+          nfa.merge_transitions(child_nfa)
+          nfa.add_epsilon_transition(start_state, child_nfa.start)
+        end
         nfa
       end
     end

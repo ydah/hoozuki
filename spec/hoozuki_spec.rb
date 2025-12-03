@@ -48,6 +48,40 @@ RSpec.describe Hoozuki do
       end
     end
 
+    context 'with multiple alternations' do
+      let(:pattern) { 'a|b|c|d' }
+
+      context 'when text is "a"' do
+        let(:value) { 'a' }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "b"' do
+        let(:value) { 'b' }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "c"' do
+        let(:value) { 'c' }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "d"' do
+        let(:value) { 'd' }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when text is "e"' do
+        let(:value) { 'e' }
+
+        it { is_expected.to be false }
+      end
+    end
+
     context 'with quantifiers "*", "+", "?"' do
       context 'with pattern "b*"' do
         let(:pattern) { 'b*' }
