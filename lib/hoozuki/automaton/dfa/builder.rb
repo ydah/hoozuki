@@ -31,19 +31,19 @@ module Hoozuki
         def process_states
           while (current_nfa_states = @queue.shift)
             current_dfa_id = @dfa_states[current_nfa_states]
-            mark_accept_state_if_needed(current_nfa_states, current_dfa_id)
-            transitions_map = build_transitions_for_state(current_nfa_states)
+            mark_accept(current_nfa_states, current_dfa_id)
+            transitions_map = build_transitions(current_nfa_states)
             process_transitions(transitions_map, current_dfa_id)
           end
         end
 
-        def mark_accept_state_if_needed(nfa_states, dfa_id)
+        def mark_accept(nfa_states, dfa_id)
           return unless nfa_states.any? { |state| @nfa_accept_set.include?(state) }
 
           @dfa.accept.merge([dfa_id])
         end
 
-        def build_transitions_for_state(nfa_states)
+        def build_transitions(nfa_states)
           transitions_map = Hash.new { |h, k| h[k] = Set.new }
 
           nfa_states.each do |state|
@@ -59,13 +59,13 @@ module Hoozuki
 
         def process_transitions(transitions_map, current_dfa_id)
           transitions_map.each do |char, next_nfa_states|
-            next_dfa_id = register_or_get_dfa_state(next_nfa_states)
+            next_dfa_id = ensure_state(next_nfa_states)
             @dfa.transitions.add([current_dfa_id, char, next_dfa_id])
             @dfa.cache[[current_dfa_id, char]] = next_dfa_id if @use_cache
           end
         end
 
-        def register_or_get_dfa_state(nfa_states)
+        def ensure_state(nfa_states)
           return @dfa_states[nfa_states] if @dfa_states.key?(nfa_states)
 
           new_id = @dfa_states.length
