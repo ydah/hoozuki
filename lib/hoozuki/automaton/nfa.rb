@@ -18,113 +18,128 @@ module Hoozuki
           raise ArgumentError, 'Node cannot be nil' if node.nil?
 
           case node
-          when Node::Literal
-            start_state = state.new_state
-            accept_state = state.new_state
-            nfa = new(start_state, [accept_state])
-            nfa.add_transition(start_state, node.value, accept_state)
-            nfa
-          when Node::Epsilon
-            start_state = state.new_state
-            accept_state = state.new_state
-            nfa = new(start_state, [accept_state])
-            nfa.add_epsilon_transition(start_state, accept_state)
-            nfa
-          when Node::Repetition
-            if node.zero_or_more?
-              remain = new_from_node(node.child, state)
-              start_state = state.new_state
-              accepts = remain.accept.dup
-              accepts << start_state
-
-              nfa = new(start_state, accepts)
-              nfa.merge_nfa(remain)
-              nfa.add_epsilon_transition(start_state, remain.start)
-
-              remain.accept.each do |accept_state|
-                nfa.add_epsilon_transition(accept_state, remain.start)
-              end
-
-              nfa
-            elsif node.one_or_more?
-              remain = new_from_node(node.child, state)
-              start_state = state.new_state
-              accept_state = state.new_state
-              nfa = new(start_state, [accept_state])
-
-              nfa.transitions.merge(remain.transitions)
-              nfa.add_epsilon_transition(start_state, remain.start)
-              remain.accept.each do |remain_accept|
-                nfa.add_epsilon_transition(remain_accept, remain.start)
-                nfa.add_epsilon_transition(remain_accept, accept_state)
-              end
-              nfa
-            elsif node.optional?
-              child = new_from_node(node.child, state)
-              start_state = state.new_state
-              accepts = child.accept.dup
-              accepts << start_state
-
-              nfa = new(start_state, accepts)
-              nfa.transitions.merge(child.transitions)
-              nfa.add_epsilon_transition(start_state, child.start)
-              nfa
-            end
-          when Node::Choice
-            remain1 = new_from_node(node.children[0], state)
-            remain2 = new_from_node(node.children[1], state)
-            start_state = state.new_state
-            accepts = remain1.accept if remain1.respond_to?(:accept)
-            accepts |= remain2.accept if remain2.respond_to?(:accept)
-            nfa = new(start_state, accepts)
-            nfa.merge_nfa(remain1)
-            nfa.merge_nfa(remain2)
-            nfa.add_epsilon_transition(start_state, remain1.start)
-            nfa.add_epsilon_transition(start_state, remain2.start)
-            nfa
-          when Node::Concatenation
-            nfas = node.children.map { |child| new_from_node(child, state) }
-            nfa = nfas.first
-            nfas.drop(1).each do |next_nfa|
-              nfa.transitions.merge(next_nfa.transitions)
-              nfa.accept.each do |accept_state|
-                nfa.add_epsilon_transition(accept_state, next_nfa.start)
-              end
-              nfa.accept = next_nfa.accept
-            end
-            nfa
+          when Node::Literal then to_literal_nfa(node, state)
+          when Node::Epsilon then to_epsilon_nfa(state)
+          when Node::Repetition then to_repetition_nfa(node, state)
+          when Node::Choice then to_choice_nfa(node, state)
+          when Node::Concatenation then to_concatenation_nfa(node, state)
           else
             raise ArgumentError, "Unsupported node type: #{node.class}"
           end
         end
-      end
 
-      def epsilon_closure_with_bitset(start)
-        visited = Set.new
-        to_visit = []
+        private
 
-        start.each do |state|
-          to_visit << state unless visited.include?(state)
+        def to_literal_nfa(node, state)
+          start_state = state.new_state
+          accept_state = state.new_state
+          nfa = new(start_state, [accept_state])
+          nfa.add_transition(start_state, node.value, accept_state)
+          nfa
         end
 
-        until to_visit.empty?
-          state = to_visit.shift
+        def to_epsilon_nfa(state)
+          start_state = state.new_state
+          accept_state = state.new_state
+          nfa = new(start_state, [accept_state])
+          nfa.add_epsilon_transition(start_state, accept_state)
+          nfa
+        end
 
-          next if visited.include?(state)
-
-          visited << state
-
-          transitions.each do |from, label, to|
-            to_visit << to if from == state && label.nil? && !visited.include?(to)
+        def to_repetition_nfa(node, state)
+          if node.zero_or_more?
+            to_zero_or_more_nfa(node.child, state)
+          elsif node.one_or_more?
+            to_one_or_more_nfa(node.child, state)
+          elsif node.optional?
+            to_optional_nfa(node.child, state)
           end
         end
 
-        visited
+        def to_zero_or_more_nfa(child_node, state)
+          child_nfa = new_from_node(child_node, state)
+          start_state = state.new_state
+          accepts = child_nfa.accept.dup << start_state
+
+          nfa = new(start_state, accepts)
+          nfa.merge_transitions(child_nfa)
+          nfa.add_epsilon_transition(start_state, child_nfa.start)
+
+          connect_accepts_to_start(nfa, child_nfa.accept, child_nfa.start)
+          nfa
+        end
+
+        def to_one_or_more_nfa(child_node, state)
+          child_nfa = new_from_node(child_node, state)
+          start_state = state.new_state
+          accept_state = state.new_state
+
+          nfa = new(start_state, [accept_state])
+          nfa.merge_transitions(child_nfa)
+          nfa.add_epsilon_transition(start_state, child_nfa.start)
+
+          child_nfa.accept.each do |child_accept|
+            nfa.add_epsilon_transition(child_accept, child_nfa.start)
+            nfa.add_epsilon_transition(child_accept, accept_state)
+          end
+
+          nfa
+        end
+
+        def to_optional_nfa(child_node, state)
+          child_nfa = new_from_node(child_node, state)
+          start_state = state.new_state
+          accepts = child_nfa.accept.dup << start_state
+
+          nfa = new(start_state, accepts)
+          nfa.merge_transitions(child_nfa)
+          nfa.add_epsilon_transition(start_state, child_nfa.start)
+          nfa
+        end
+
+        def to_choice_nfa(node, state)
+          left_child, right_child = node.children
+          left_nfa = new_from_node(left_child, state)
+          right_nfa = new_from_node(right_child, state)
+
+          start_state = state.new_state
+          accepts = left_nfa.accept | right_nfa.accept
+
+          nfa = new(start_state, accepts)
+          nfa.merge_transitions(left_nfa)
+          nfa.merge_transitions(right_nfa)
+          nfa.add_epsilon_transition(start_state, left_nfa.start)
+          nfa.add_epsilon_transition(start_state, right_nfa.start)
+          nfa
+        end
+
+        def to_concatenation_nfa(node, state)
+          nfas = node.children.map { |child| new_from_node(child, state) }
+          nfa = nfas.first
+
+          nfas.drop(1).each do |next_nfa|
+            nfa.merge_transitions(next_nfa)
+            connect_accepts_to_start(nfa, nfa.accept, next_nfa.start)
+            nfa.accept = next_nfa.accept
+          end
+
+          nfa
+        end
+
+        def connect_accepts_to_start(nfa, accept_states, start_state)
+          accept_states.each do |accept_state|
+            nfa.add_epsilon_transition(accept_state, start_state)
+          end
+        end
       end
 
       def epsilon_closure(start)
-        bit_result = epsilon_closure_with_bitset(start.to_set)
-        ::SortedSet.new(bit_result)
+        closure = calculate_epsilon_closure(start.to_set)
+        ::SortedSet.new(closure)
+      end
+
+      def merge_transitions(other)
+        @transitions.merge(other.transitions)
       end
 
       def add_epsilon_transition(from, to)
@@ -135,11 +150,29 @@ module Hoozuki
         @transitions << [from, char, to]
       end
 
-      def merge_nfa(other)
-        @transitions.merge(other.transitions)
-        add_epsilon_transition(@start, other.start)
-        other.accept.each do |accept_state|
-          @accept << accept_state
+      private
+
+      def calculate_epsilon_closure(start_states)
+        visited = Set.new
+        to_visit = start_states.to_a
+
+        until to_visit.empty?
+          state = to_visit.shift
+          next if visited.include?(state)
+
+          visited << state
+
+          epsilon_transitions_from(state).each do |target_state|
+            to_visit << target_state unless visited.include?(target_state)
+          end
+        end
+
+        visited
+      end
+
+      def epsilon_transitions_from(state)
+        transitions.each_with_object([]) do |(from, label, to), result|
+          result << to if from == state && label.nil?
         end
       end
     end
