@@ -2,15 +2,12 @@
 
 ## Unreleased
 
-### Bug Fixes
-
-- Use standard `Set` for epsilon closure to keep DFA matching compatible with Ruby head. ([@ydah])
-
-## 1.0.1 (2026-04-26)
+## 1.0.1 (2026-04-27)
 
 ### Bug Fixes
 
 - Restore the instance-style `Hoozuki.new(...).match?` API. ([@ydah])
+- Use standard `Set` for epsilon closure to keep DFA matching compatible with Ruby head. ([@ydah])
 
 ### Documentation
 
