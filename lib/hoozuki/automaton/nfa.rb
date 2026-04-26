@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'sorted_set'
+require 'set'
 
 module Hoozuki
   module Automaton
@@ -32,7 +32,7 @@ module Hoozuki
           end
         end
 
-        ::SortedSet.new(visited)
+        Set.new(visited)
       end
 
       def merge_transitions(other)
