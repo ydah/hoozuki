@@ -8,7 +8,29 @@ require_relative 'hoozuki/version'
 require_relative 'hoozuki/vm'
 
 module Hoozuki
+  class Pattern
+    def initialize(pattern, engine: :dfa)
+      @engine = engine
+      @compiled = Hoozuki.compile(pattern, engine: engine)
+    end
+
+    def match?(input)
+      case @engine
+      when :dfa
+        @compiled.match?(input, Hoozuki.__send__(:use_cache?, input))
+      when :vm
+        Hoozuki::VM::Evaluator.evaluate(@compiled, input, 0, 0)
+      else
+        raise ArgumentError, "Unknown engine: #{@engine}"
+      end
+    end
+  end
+
   module_function
+
+  def new(pattern, engine: :dfa)
+    Pattern.new(pattern, engine: engine)
+  end
 
   def compile(input, engine: :dfa)
     ast = Parser.new.parse(input)
@@ -26,13 +48,7 @@ module Hoozuki
   end
 
   def match?(pattern, input, engine: :dfa)
-    compiled = compile(pattern, engine: engine)
-    case engine
-    when :dfa
-      compiled.match?(input, use_cache?(input))
-    when :vm
-      VM::Evaluator.evaluate(compiled, input, 0, 0)
-    end
+    new(pattern, engine: engine).match?(input)
   end
 
   def use_cache?(input)

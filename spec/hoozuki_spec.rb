@@ -1,6 +1,24 @@
 # frozen_string_literal: true
 
 RSpec.describe Hoozuki do
+  describe '.new' do
+    it 'keeps the instance-style API with the DFA engine' do
+      regex = described_class.new('a(bc|de)*f', engine: :dfa)
+
+      expect(regex.match?('abcdef')).to be true
+      expect(regex.match?('adef')).to be true
+      expect(regex.match?('xyz')).to be false
+    end
+
+    it 'keeps the instance-style API with the VM engine' do
+      regex = described_class.new('a(bc|de)*f', engine: :vm)
+
+      expect(regex.match?('abcdef')).to be true
+      expect(regex.match?('adef')).to be true
+      expect(regex.match?('xyz')).to be false
+    end
+  end
+
   shared_examples 'regex matching behavior' do |mode|
     subject { described_class.match?(pattern, value, engine: mode) }
 

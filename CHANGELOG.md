@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+- Restore the instance-style `Hoozuki.new(...).match?` API. ([@ydah])
+
+### Documentation
+
+- Correct the README engine option example from `:nfa` to `:dfa`. ([@ydah])
+
 ## 1.0.0 (2025-12-03)
 
 ### Breaking Changes

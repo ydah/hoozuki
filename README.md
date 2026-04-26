@@ -15,7 +15,7 @@ gem install hoozuki
 
 ```ruby
 require 'hoozuki'
-regex = Hoozuki.new('a(bc|de)*f') # Or Hoozuki.new('a(bc|de)*f', engine: :nfa) for NFA based engine
+regex = Hoozuki.new('a(bc|de)*f') # Or Hoozuki.new('a(bc|de)*f', engine: :dfa) for DFA based engine
 regex.match?('abcdef') # => true
 regex.match?('adef')   # => true
 regex.match?('xyz')    # => false
