@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.0.1 (2026-04-26)
+
 ### Bug Fixes
 
 - Restore the instance-style `Hoozuki.new(...).match?` API. ([@ydah])
